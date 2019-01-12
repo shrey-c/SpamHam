@@ -4,17 +4,24 @@ import seaborn as sns
 import string
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer, TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report
 import nltk
 nltk.download('stopwords')
+from nltk.corpus import stopwords
 
 
 messages = [line.rstrip() for line in open('smsspamcollection/SMSSpamCollection')]
 print(len(messages))
 
+for message_no, message in enumerate(messages[:10]):
+    print(message_no, message)
+    print('\n')
+
 messages = pd.read_csv('smsspamcollection/SMSSpamCollection', sep='\t',
                            names=["label", "message"])
 messages.head()
 messages.describe()
+messages.groupby('label').describe()
 messages['length'] = messages['message'].apply(len)
 messages.head()
 
@@ -32,7 +39,7 @@ nopunc = [char for char in mess if char not in string.punctuation]
 # Join the characters again to form the string.
 nopunc = ''.join(nopunc)
 
-from nltk.corpus import stopwords
+
 stopwords.words('english')[0:10] # Show some stop words
 nopunc.split()
 # Now just remove any stopwords
@@ -76,6 +83,18 @@ print(bow4.shape)
 
 print(bow_transformer.get_feature_names()[4073])
 print(bow_transformer.get_feature_names()[9570])
+messages_bow = bow_transformer.transform(messages['message'])
+print('Shape of Sparse Matrix: ', messages_bow.shape)
+print('Amount of Non-Zero occurences: ', messages_bow.nnz)
+sparsity = (100.0 * messages_bow.nnz / (messages_bow.shape[0] * messages_bow.shape[1]))
+print('sparsity: {}'.format(round(sparsity)))
+
+tfidf_transformer = TfidfTransformer().fit(messages_bow)
+tfidf4 = tfidf_transformer.transform(bow4)
+print(tfidf4)
+
+print(tfidf_transformer.idf_[bow_transformer.vocabulary_['u']])
+print(tfidf_transformer.idf_[bow_transformer.vocabulary_['university']])
 
 messages_tfidf = tfidf_transformer.transform(messages_bow)
 print(messages_tfidf.shape)
@@ -86,4 +105,5 @@ print('predicted:', spam_detect_model.predict(tfidf4)[0])
 print('expected:', messages.label[3])
 all_predictions = spam_detect_model.predict(messages_tfidf)
 print(all_predictions)
-messages_bow = bow_transformer.transform(messages['message'])
+
+print (classification_report(messages['label'], all_predictions))
