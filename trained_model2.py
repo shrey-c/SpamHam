@@ -223,8 +223,9 @@ sc_bow.train()
 preds_bow = sc_bow.predict(testData['message'])
 metrics(testData['label'], preds_bow)
 
-filename = 'finalized_model2.sav'
+filename = 'finalized_model2.pickle'
 pickle.dump(sc_tf_idf, open(filename, 'wb'))
+
 
 pm = process_message('I cant pick the phone right now. Pls send a message')
 print(sc_tf_idf.classify(pm))
@@ -233,5 +234,5 @@ print(sc_tf_idf.classify(pm))
 pm = process_message('Congratulations ur awarded $500 ')
 print(sc_tf_idf.classify(pm))
 
-loaded_model = pickle.load(open('finalized_model2.sav', 'rb'))
+loaded_model = pickle.load(open(filename, 'rb'))
 print(loaded_model)
