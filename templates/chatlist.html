@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div id="list" class="content-section card">
+        {% if assosciated_users_list != [] %}
+        <h3><b> Chat with your associates: </b></h3>
+        <hr>
+        <ol>
+            {% for user in associated_users_list %}
+            <h4 class = "list-group-item list-group-item-light"><a href="{{url_for('chat', chatwith_id=user[0])}}"> <b> {{ user[1] }} </b> </a> </h4>
+
+                {% endfor %}
+        </ol>
+        {% else %}
+        <h4> Your invites haven't been accepted yet. </h4>
+        {% endif %}
+    </div>
+
+{% endblock content %}
