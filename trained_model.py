@@ -9,7 +9,7 @@ import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 import pickle
-
+from sklearn.externals import joblib
 
 messages = [line.rstrip() for line in open('smsspamcollection/SMSSpamCollection')]
 print(len(messages))
@@ -102,8 +102,6 @@ print(messages_tfidf.shape)
 
 spam_detect_model = MultinomialNB().fit(messages_tfidf, messages['label'])
 
-filename = 'finalized_model.sav'
-pickle.dump(spam_detect_model, open(filename, 'wb'))
 
 print('predicted:', spam_detect_model.predict(tfidf4)[0])
 print('expected:', messages.label[3])
@@ -111,3 +109,28 @@ all_predictions = spam_detect_model.predict(messages_tfidf)
 print(all_predictions)
 
 print (classification_report(messages['label'], all_predictions))
+
+from sklearn.model_selection import train_test_split
+
+msg_train, msg_test, label_train, label_test = \
+train_test_split(messages['message'], messages['label'], test_size=0.2)
+
+print(len(msg_train), len(msg_test), len(msg_train) + len(msg_test))
+
+from sklearn.pipeline import Pipeline
+
+pipeline = Pipeline([
+    ('bow', CountVectorizer(analyzer=text_process)),  # strings to token integer counts
+    ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores
+    ('classifier', MultinomialNB()),  # train on TF-IDF vectors w/ Naive Bayes classifier
+])
+
+pipeline.fit(msg_train,label_train)
+predictions = pipeline.predict(msg_test)
+print ('hi')
+print(predictions)
+print('bye')
+joblib.dump(pipeline, 'model.pkl', compress=9)
+classifier = joblib.load('model.pkl')
+predict = classifier.predict(msg_test)
+print("woo")

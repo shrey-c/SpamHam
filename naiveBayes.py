@@ -11,23 +11,23 @@ class NBClassifier:
     arrayDictCondProb={}
     totVocabList=[]
     vocabSet=set()
-    
+
     ###################################
     #========Constructor===============
-    ####################################  
-    
+    ####################################
+
     def __init__(self,numOfClasses,classNames):
         self.numOfClasses=numOfClasses
         for i in range(0,self.numOfClasses):
             self.classMapping[i]=classNames[i];
             self.arrayDictCondProb[classNames[i]]={}
-            
+
     #################################
     #updates the Vocabulary Dictionary of the instance.
     #Also updates the Prior Probability dictionary of the instance
-    #input:=Path where mails are stored    
-    ################################# 
-    
+    #input:=Path where mails are stored
+    #################################
+
     def buildVocab(self,pathArray):
         numOfMails={}
         totMails=0
@@ -38,18 +38,18 @@ class NBClassifier:
             self.dictOfVocabs[value]=getVocabulary(setOfMails);
         for key,value in numOfMails.items():
             self.dictPriorProb[key]=numOfMails[key]/totMails
-            
+
     ###############################
     #Removes the stopwords from the vocabulary and updates
-    # the instance vocab dictionary with that. Also updates the 
+    # the instance vocab dictionary with that. Also updates the
     # prior prob dictionary of the instance
     #input:=Path where the mail files are stored
-    ############################### 
-      
+    ###############################
+
     def buildVocabWOStopWords(self,pathArray,stopWordPath):
         numOfMails={}
         totMails=0
-        stopWords=readStopWords(stopWordPath);        
+        stopWords=readStopWords(stopWordPath);
         for key,value in self.classMapping.items():
             setOfMails=getMailDictionaryWOStopWords(pathArray[key],stopWords);
             numOfMails[value]=len(setOfMails)
@@ -57,17 +57,17 @@ class NBClassifier:
             self.dictOfVocabs[value]=getVocabulary(setOfMails);
         for key,value in numOfMails.items():
             self.dictPriorProb[key]=numOfMails[key]/totMails
-        
-            
+
+
     ##############################
     # Removes the duplicates from the vocabulary
-    #############################         
+    #############################
     def buildVocabSet(self):
         totVocabList=[]
         for value in self.dictOfVocabs.values():
             totVocabList.extend(value)
-        self.vocabSet=set(totVocabList);    
-            
+        self.vocabSet=set(totVocabList);
+
     ############################
     #Gets the Post conditional probabilities with LaPlace Smoothening
     ############################
@@ -81,13 +81,13 @@ class NBClassifier:
                     self.arrayDictCondProb[value][term]=(1+termCount)/(len(self.vocabSet)+len(self.dictOfVocabs[value]))
                 else:
                     self.arrayDictCondProb[value][term]=(1)/(len(self.vocabSet)+len(self.dictOfVocabs[value]));
-                                    
+
     ##########################
-    # Depending on which post probability is more, returns the 
+    # Depending on which post probability is more, returns the
     # class for the input mail(list of words in that mail)
     #input:=words contained in the test mail
     #output:=Class of the mail Spam or Ham
-    ##########################                
+    ##########################
     def getClassification(self,listOfWords):
         posteriorProb={}
         for val in self.classMapping.values():
@@ -99,8 +99,8 @@ class NBClassifier:
         v=list(posteriorProb.values())
         k=list(posteriorProb.keys())
         return k[v.index(max(v))]
-     
-    
+
+
     ##############################
     #Gets the accuracy for test mails
     #Input:=Path for test mails
@@ -112,7 +112,7 @@ class NBClassifier:
         hamcorrect=0;
         for key,value in spamTestMails.items():
             if(self.getClassification(value)==("spam")):
-                spamcorrect=spamcorrect+1  
+                spamcorrect=spamcorrect+1
         for key,value in hamTestMails.items():
             if(self.getClassification(value)==("ham")):
                 hamcorrect=hamcorrect+1;
@@ -122,7 +122,7 @@ class NBClassifier:
         #print(spamaccuracy)
         #print(hamaccuracy)
         print("Accuracy without removing stopwords",accuracy)
-        
+
     ####################################
     #Same function as above but also removes
     #stopwords from the test mails.
@@ -135,7 +135,7 @@ class NBClassifier:
         hamcorrect=0;
         for key,value in spamTestMails.items():
             if(self.getClassification(value)==("spam")):
-                spamcorrect=spamcorrect+1  
+                spamcorrect=spamcorrect+1
         for key,value in hamTestMails.items():
             if(self.getClassification(value)==("ham")):
                 hamcorrect=hamcorrect+1;
@@ -145,7 +145,7 @@ class NBClassifier:
         #print(spamaccuracy)
         #print(hamaccuracy)
         print("Accuracy after removing stopwords",accuracy)
-        
+
 def main():
     NB=NBClassifier(2,["spam","ham"]);
     argvList=sys.argv
@@ -159,14 +159,12 @@ def main():
     NB.buildVocabSet();
     NB.train();
     NB.validate(testPaths)
-    
+
     NB1=NBClassifier(2,["spam","ham"]);
     NB1.buildVocabWOStopWords(trainPaths,argvList[5]);
     NB1.buildVocabSet();
     NB1.train();
     NB1.validateWOStopWords(testPaths,argvList[5])
-  
+
 
 main()
-    
-    

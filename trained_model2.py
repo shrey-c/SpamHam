@@ -52,20 +52,8 @@ trainData['label'].value_counts()
 testData['label'].value_counts()
 
 spam_words = ' '.join(list(mails[mails['label'] == 1]['message']))
-spam_wc = WordCloud(width = 512,height = 512).generate(spam_words)
-plt.figure(figsize = (10, 8), facecolor = 'k')
-plt.imshow(spam_wc)
-plt.axis('off')
-plt.tight_layout(pad = 0)
-plt.show()
 
 ham_words = ' '.join(list(mails[mails['label'] == 0]['message']))
-ham_wc = WordCloud(width = 512,height = 512).generate(ham_words)
-plt.figure(figsize = (10, 8), facecolor = 'k')
-plt.imshow(ham_wc)
-plt.axis('off')
-plt.tight_layout(pad = 0)
-plt.show()
 
 trainData.head()
 
@@ -223,16 +211,25 @@ sc_bow.train()
 preds_bow = sc_bow.predict(testData['message'])
 metrics(testData['label'], preds_bow)
 
-filename = 'finalized_model2.pickle'
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+
+#pm = process_message('Congratu#lations ur awarded $500 ')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+
+filename = 'finalized_model2.sav'
 pickle.dump(sc_tf_idf, open(filename, 'wb'))
 
+# some time later...
 
-pm = process_message('I cant pick the phone right now. Pls send a message')
-print(sc_tf_idf.classify(pm))
-
-
-pm = process_message('Congratulations ur awarded $500 ')
-print(sc_tf_idf.classify(pm))
-
-loaded_model = pickle.load(open(filename, 'rb'))
-print(loaded_model)
+# load the model from disk

@@ -1,5 +1,9 @@
-import pickle
+from sklearn.externals import joblib
+from trained_model import *
 
-
-loaded_model = pickle.load(open('finalized_model.sav', 'rb'))
-print(loaded_model)
+print (1000)
+classifier = joblib.load('model.pkl')
+print(1)
+predict = classifier.predict(msg_test)
+print (2)
+print (predict)
