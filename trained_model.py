@@ -8,6 +8,7 @@ from sklearn.metrics import classification_report
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
+import pickle
 
 
 messages = [line.rstrip() for line in open('smsspamcollection/SMSSpamCollection')]
@@ -100,6 +101,9 @@ messages_tfidf = tfidf_transformer.transform(messages_bow)
 print(messages_tfidf.shape)
 
 spam_detect_model = MultinomialNB().fit(messages_tfidf, messages['label'])
+
+filename = 'finalized_model.sav'
+pickle.dump(spam_detect_model, open(filename, 'wb'))
 
 print('predicted:', spam_detect_model.predict(tfidf4)[0])
 print('expected:', messages.label[3])
