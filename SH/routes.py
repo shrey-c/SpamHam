@@ -3,15 +3,20 @@ import secrets
 from SH import app, db, bcrypt
 from PIL import Image
 from flask import Flask, session, escape, render_template, url_for, flash, redirect, request
-from SH.forms import RegistrationFormParty, RegistrationFormSponser, LoginForm, SelectForm,UpdateAccountFormParty,UpdateAccountFormSponsor, ChatBoxText, RequestForm, InviteForm
-from SH.models import PartyUser, SponsorUser, User, Conversing, Conversation
+from SH.forms import LoginForm, SelectForm,ChatBoxText
+from SH.models import User, Conversing, Conversation
 import hashlib #for SHA512
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy.orm import Session
-from math import sqrt
 #from googlemaps import Client as GoogleMaps
 import requests
 from sqlalchemy import or_ , and_
+import pickle
+
+
+loaded_model = pickle.load(open('finalized_model.sav', 'rb'))
+print(loaded_model)
+
 
 @app.route("/")
 @app.route("/home")
@@ -19,39 +24,25 @@ def home():
     return render_template('home.html')
 
 
-
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form= SelectForm(request.form)
     if form.validate_on_submit():
-        if current_user.is_authenticated:
-            return redirect(url_for('home'))
-            if form.validate_on_submit():
-                pw = (form.password.data)
-                s = 0
-                for char in pw:
-                    a = ord(char) #ASCII
-                    s = s+a #sum of ASCIIs acts as the salt
-                hashed_password = (str)((hashlib.sha512((str(s).encode('utf-8'))+((form.password.data).encode('utf-8')))).hexdigest())
-                #hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-                user = User( email= form.email.data , password= hashed_password, type= form.type.data )
-                db.session.add(user)
-                db.session.commit()
-                flash(f'Success! Please fill in the remaining details', 'success')
-            return redirect(url_for('login'))
+        #if current_user.is_authenticated:
+        #    return redirect(url_for('home'))
+        pw = (form.password.data)
+        s = 0
+        for char in pw:
+            a = ord(char) #ASCII
+            s = s+a #sum of ASCIIs acts as the salt
+        hashed_password = (str)((hashlib.sha512((str(s).encode('utf-8'))+((form.password.data).encode('utf-8')))).hexdigest())
+            #hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User( email= form.email.data , password= hashed_password, type= form.type.data )
+        db.session.add(user)
+        db.session.commit()
+        flash(f'Success! Please fill in the remaining details', 'success')
+        return redirect(url_for('login'))
     return render_template('selectForm.html', form=form)
-
-
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static\profile_pics', picture_fn)
-    output_size = (125, 125)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
-    return picture_fn
 
 
 
@@ -144,49 +135,6 @@ def user2_account(user2_id):
             return render_template('User2Account_party.html', title='Account', partyUser=partyUser, current_user=current_user,flag=flag)
 
 
-@app.route("/requests", methods= ['POST', 'GET'])
-@login_required
-def inviteRecieved():
-
-    userList=[]
-    form = RequestForm()
-    conversing = Conversing.query.filter_by(user2 = current_user.id).all()
-    print(conversing)
-    print(10001)
-
-    if current_user.type == 'S':
-        for user in conversing:
-            user_invitee=PartyUser.query.filter_by(user_id=user.user1).first()
-            #user_name=user_invitee.party_name
-            userList.append(user_invitee)
-            print(user_invitee.party_name)
-            if form.validate_on_submit():
-                if form.invite_status.data=='1':
-                    user.status='In-touch'
-                    db.session.commit()
-                elif  form.invite_status.data=='0':
-                    user.status='Not Accepted'
-                    db.session.commit()
-
-        return render_template ('requestsPageSponsor.html', title = 'requests', form=form, userList=userList, current_user = current_user)
-
-    if current_user.type == 'P':
-        for user in conversing:
-            user_invitee=SponsorUser.query.filter_by(user_id=user.user1).first()
-            #user_name=user_invitee.sponsor_name
-            userList.append(user_invitee)
-            print(user_invitee.sponsor_name)
-        if form.validate_on_submit():
-            if form.invite_status==1:
-                conversing.status='In-touch'
-                db.session.commit()
-            elif  form.invite_status==0:
-                conversing.status='Not Accepted'
-                db.session.commit()
-
-        return render_template ('requestsPageParty.html', title = 'requests', form=form, userList=userList, current_user=current_user)
-
-
 @app.route("/chatwith", methods= ['POST', 'GET'])#Whom do you want to chat with?
 @login_required
 def chatwith():
@@ -251,7 +199,7 @@ def chat(chatwith_id):
                     messages.append(message)
 
             elif  nowuser.user2==current_user.id:
-                user=SponsorUser.query.filter_by(user_id=nowuser.user2).first()
+                user=User.query.filter_by(user_id=nowuser.user2).first()
                 messages=[[user.sponsor_name]]
                 if form.validate_on_submit() :
                     conversation= Conversation(text = form.text.data, conversing_id= nowuser.id, sender_id= current_user.id  )
@@ -259,30 +207,6 @@ def chat(chatwith_id):
                     db.session.commit()
                 for conversation in Conversation.query.filter_by(conversing_id = nowuser.id).all():
                     message=[conversation.text,conversation.time, conversation.sender_id]#just for now
-                    messages.append(message)
-
-        elif current_user.type=='S':
-            if nowuser.user1== current_user.id :
-                user=PartyUser.query.filter_by(user_id=chatwith_id).first()
-                messages=[[user.party_name]]
-                if form.validate_on_submit() :
-                    conversation= Conversation(text = form.text.data, conversing_id= nowuser.id, sender_id= current_user.id )
-                    db.session.add(conversation)
-                    db.session.commit()
-                for conversation in Conversation.query.filter_by(conversing_id = nowuser.id).all():
-                    message=[conversation.text,conversation.time, conversation.sender_id]
-                    messages.append(message)
-
-            elif nowuser.user2==current_user.id :
-                user=PartyUser.query.filter_by(user_id=chatwith_id).first()
-                messages=[[user.party_name]]
-                if form.validate_on_submit() :
-                    conversation= Conversation(text = form.text.data, conversing_id= nowuser.id, sender_id= current_user.id  )
-                    db.session.add(conversation)
-                    db.session.commit()
-                for conversation in Conversation.query.filter_by(conversing_id = nowuser.id).all():
-                        #partyUser=PartyUser.query.filter_by(user_id=chatwith_id).first()#just for now
-                    message=[conversation.text,conversation.time, conversation.sender_id]
                     messages.append(message)
 
     return render_template('chatbox.html', title= 'ChatBox', form=form, messages=messages, current_user=current_user, user=user)
