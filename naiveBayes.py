@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from collections import Counter
 from NBHelper import *
 import math as m
@@ -164,3 +165,8 @@ def main():
     NB1.buildVocabSet();
     NB1.train();
     NB1.validateWOStopWords(testPaths,argvList[5])
+  
+
+main()
+    
+    
