@@ -10,42 +10,13 @@ nltk.download('stopwords')
 from nltk.corpus import stopwords
 import pickle
 from sklearn.externals import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
 
-messages = [line.rstrip() for line in open('smsspamcollection/SMSSpamCollection')]
-print(len(messages))
-
-for message_no, message in enumerate(messages[:10]):
-    print(message_no, message)
-    print('\n')
-
-messages = pd.read_csv('smsspamcollection/SMSSpamCollection', sep='\t',
+def loading():
+    messages = pd.read_csv('smsspamcollection/SMSSpamCollection', sep='\t',
                            names=["label", "message"])
-messages.head()
-messages.describe()
-messages.groupby('label').describe()
-messages['length'] = messages['message'].apply(len)
-messages.head()
-
-messages['length'].plot(bins=50, kind='hist')
-messages.length.describe()
-messages[messages['length'] == 910]['message'].iloc[0]
-messages.hist(column='length', by='label', bins=50,figsize=(12,4))
-
-
-mess = 'Sample message! Notice: it has punctuation.'
-
-# Check characters to see if they are in punctuation
-nopunc = [char for char in mess if char not in string.punctuation]
-
-# Join the characters again to form the string.
-nopunc = ''.join(nopunc)
-
-
-stopwords.words('english')[0:10] # Show some stop words
-nopunc.split()
-# Now just remove any stopwords
-clean_mess = [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
-
+    messages['length'] = messages['message'].apply(len)
 
 def text_process(mess):
     """
@@ -63,74 +34,30 @@ def text_process(mess):
     # Now just remove any stopwords
     return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
 
-messages.head()
-# Check to make sure its working
-messages['message'].head(5).apply(text_process)
-# Show original dataframe
-messages.head()
 
-# Might take awhile...
-bow_transformer = CountVectorizer(analyzer=text_process).fit(messages['message'])
-
-# Print total number of vocab words
-print(len(bow_transformer.vocabulary_))
-
-message4 = messages['message'][3]
-print(message4)
-
-bow4 = bow_transformer.transform([message4])
-print(bow4)
-print(bow4.shape)
-
-print(bow_transformer.get_feature_names()[4073])
-print(bow_transformer.get_feature_names()[9570])
-messages_bow = bow_transformer.transform(messages['message'])
-print('Shape of Sparse Matrix: ', messages_bow.shape)
-print('Amount of Non-Zero occurences: ', messages_bow.nnz)
-sparsity = (100.0 * messages_bow.nnz / (messages_bow.shape[0] * messages_bow.shape[1]))
-print('sparsity: {}'.format(round(sparsity)))
-
-tfidf_transformer = TfidfTransformer().fit(messages_bow)
-tfidf4 = tfidf_transformer.transform(bow4)
-print(tfidf4)
-
-print(tfidf_transformer.idf_[bow_transformer.vocabulary_['u']])
-print(tfidf_transformer.idf_[bow_transformer.vocabulary_['university']])
-
-messages_tfidf = tfidf_transformer.transform(messages_bow)
-print(messages_tfidf.shape)
-
-spam_detect_model = MultinomialNB().fit(messages_tfidf, messages['label'])
+def splitting():
+    msg_train, msg_test, label_train, label_test = \
+    train_test_split(messages['message'], messages['label'], test_size=0.2)
+    print(len(msg_train), len(msg_test), len(msg_train) + len(msg_test))
 
 
-print('predicted:', spam_detect_model.predict(tfidf4)[0])
-print('expected:', messages.label[3])
-all_predictions = spam_detect_model.predict(messages_tfidf)
-print(all_predictions)
+def piping():
+    pipeline = Pipeline([
+        ('bow', CountVectorizer(analyzer=text_process)),  # strings to token integer counts
+        ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores
+        ('classifier', MultinomialNB()),  # train on TF-IDF vectors w/ Naive Bayes classifier
+    ])
+    pipeline.fit(msg_train,label_train)
+    predictions = pipeline.predict(msg_test)
+    print(predictions)
+    return predictions
 
-print (classification_report(messages['label'], all_predictions))
 
-from sklearn.model_selection import train_test_split
+def dumping():
+    joblib.dump(pipeline, 'model.pkl', compress=9)
 
-msg_train, msg_test, label_train, label_test = \
-train_test_split(messages['message'], messages['label'], test_size=0.2)
 
-print(len(msg_train), len(msg_test), len(msg_train) + len(msg_test))
-
-from sklearn.pipeline import Pipeline
-
-pipeline = Pipeline([
-    ('bow', CountVectorizer(analyzer=text_process)),  # strings to token integer counts
-    ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores
-    ('classifier', MultinomialNB()),  # train on TF-IDF vectors w/ Naive Bayes classifier
-])
-
-pipeline.fit(msg_train,label_train)
-predictions = pipeline.predict(msg_test)
-print ('hi')
-print(predictions)
-print('bye')
-joblib.dump(pipeline, 'model.pkl', compress=9)
-classifier = joblib.load('model.pkl')
-predict = classifier.predict(msg_test)
-print("woo")
+def classify():
+    classifier = joblib.load('model.pkl')
+    predict = classifier.predict(msg_test)
+    print("woo")
