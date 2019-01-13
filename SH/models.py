@@ -10,26 +10,40 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email= db.Column(db.String(120), unique=True)
     password= db.Column(db.String(150), nullable=False)
-    conversing = db.relationship("Conversing", back_populates ="user")
-
+    email = db.relationship("Email", back_populates ="user")
+    received = db.Column(db.String(1500), nullable=False)
+    spam = db.Column(db.String(1500), nullable=False)
+    ham = db.Column(db.String(1500), nullable=False)
     def __repr__(self):
-        return f"User('{self.email}')"
+        return f"User('{self.email}','{self.received}','{self.spam}','{self.ham}')"
 
-class Conversing(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user1 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable= True)
-    user = db.relationship("User", back_populates ="conversing")
-    user2 = db.Column(db.Integer)
-    conversation=db.relationship("Conversation", uselist=False, back_populates ="conversing")
-    def __repr__(self):
-        return f"Conversing('{self.user1}','{self.user2}')"
+#class Conversing(db.Model):
+    #id = db.Column(db.Integer, primary_key=True)
+    #user1 = db.Column(db.Integer, db.ForeignKey('user.id'), nullable= True)
+    #user = db.relationship("User", back_populates ="conversing")
+    #user2 = db.Column(db.Integer)
+    #conversation=db.relationship("Conversation", uselist=False, back_populates ="conversing")
+    #def __repr__(self):
+        #return f"Conversing('{self.user1}','{self.user2}')"
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(500), nullable=False)
+    text = db.Column(db.String(1500), nullable=False)
     time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    conversing_id = db.Column(db.Integer, db.ForeignKey('conversing.id'))
-    conversing= db.relationship("Conversing", uselist=False, back_populates ="conversation" )
+    #conversing_id = db.Column(db.Integer, db.ForeignKey('conversing.id'))
+    #conversing= db.relationship("Conversing", uselist=False, back_populates ="conversation" )
     sender_id = db.Column(db.Integer, unique = False , nullable= False )
+    receiver_id = db.Column(db.Integer, unique = False , nullable= False )
     def __repr__(self):
         return f"Conversation('{self.text}','{self.time}','{self.conversing_id}', '{self.sender_id}')"
+
+
+class Email(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    #user = db.relationship("User", back_populates ="email")
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable= True)
+    received = db.Column(db.String(1500), nullable=True)
+    spam = db.Column(db.String(1500), nullable=True)
+    ham = db.Column(db.String(1500), nullable=True)
+    def __repr__(self):
+        return f"Conversation('{self.received}','{self.spam}','{self.ham}')"

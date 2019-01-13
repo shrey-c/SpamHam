@@ -3,8 +3,8 @@ import secrets
 from SH import app, db, bcrypt
 from PIL import Image
 from flask import Flask, session, escape, render_template, url_for, flash, redirect, request
-from SH.forms import LoginForm, SelectForm,ChatBoxText
-from SH.models import User, Conversing, Conversation
+from SH.forms import LoginForm, RegisterForm,MailBoxText
+from SH.models import User,  Conversation, Email
 import hashlib #for SHA512
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy.orm import Session
@@ -26,7 +26,7 @@ def home():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
-    form= SelectForm(request.form)
+    form= RegisterForm(request.form)
     if form.validate_on_submit():
         #if current_user.is_authenticated:
         #    return redirect(url_for('home'))
@@ -64,6 +64,13 @@ def login():
 
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
+            ##ML PART
+
+
+
+
+
+
             return redirect(next_page) if next_page else redirect(url_for('account'))
 
         else:
@@ -85,10 +92,42 @@ def logout():
 @app.route("/account", methods= ['POST', 'GET'])
 @login_required
 def account():
+        ##
 
-        return render_template('accountSponsor.html', title='Account',sponsor_logo=sponsor_logo, form=form)
+        return render_template('account.html', title='Account',sponsor_logo=sponsor_logo, form=form)
 
+@app.route("/compose", methods= ['POST', 'GET'])
+@login_required
+def compose():
+        form =MailBoxText(request.form)
+        if form.validate_on_submit() :
+            user_recepient = User.query.filter_by(email = form.recepient.data)
+            conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
+            db.session.add(conversation)
+            db.session.commit()
+            email = Email(user_id = user_recepient.id, received = conversation.text )
+            db.session.add(email)
+            db.session.commit()
 
+        return render_template('compose.html', title='Account',sponsor_logo=sponsor_logo, form=form)
+
+@app.route("/received", methods= ['POST', 'GET'])
+@login_required
+def account():
+
+        return render_template('received.html', title='Account',sponsor_logo=sponsor_logo, form=form)
+
+@app.route("/spam", methods= ['POST', 'GET'])
+@login_required
+def account():
+
+        return render_template('spam.html', title='Account',sponsor_logo=sponsor_logo, form=form)
+
+@app.route("/sent", methods= ['POST', 'GET'])
+@login_required
+def account():
+
+        return render_template('sent.html', title='Account',sponsor_logo=sponsor_logo, form=form)
 
 @app.route("/user/<user2_id>", methods = ['GET', 'POST'])
 @login_required
@@ -181,7 +220,7 @@ def chatwith():
 @login_required
 def chat(chatwith_id):
     print(chatwith_id)
-    form=ChatBoxText()
+    form=MailBoxText()
     messages=[]
     conversing= Conversing.query.filter(or_(Conversing.user1==chatwith_id,Conversing.user2==chatwith_id)).all()
     for nowuser in conversing:
@@ -210,11 +249,6 @@ def chat(chatwith_id):
                     messages.append(message)
 
     return render_template('chatbox.html', title= 'ChatBox', form=form, messages=messages, current_user=current_user, user=user)
-
-
-
-
-
 
 
 @app.route("/about")
