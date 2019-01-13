@@ -39,16 +39,16 @@ def splitting():
     msg_train, msg_test, label_train, label_test = \
     train_test_split(messages['message'], messages['label'], test_size=0.2)
     print(len(msg_train), len(msg_test), len(msg_train) + len(msg_test))
+    return msg_test
 
-
-def piping():
+def piping(msg):
     pipeline = Pipeline([
         ('bow', CountVectorizer(analyzer=text_process)),  # strings to token integer counts
         ('tfidf', TfidfTransformer()),  # integer counts to weighted TF-IDF scores
         ('classifier', MultinomialNB()),  # train on TF-IDF vectors w/ Naive Bayes classifier
     ])
     pipeline.fit(msg_train,label_train)
-    predictions = pipeline.predict(msg_test)
+    predictions = pipeline.predict(msg)
     print(predictions)
     return predictions
 
@@ -57,7 +57,9 @@ def dumping():
     joblib.dump(pipeline, 'model.pkl', compress=9)
 
 
-def classify():
+def classify(msg):
+    #ms = text_process(msg)
     classifier = joblib.load('model.pkl')
-    predict = classifier.predict(msg_test)
+    predict = classifier.predict(msg)
     print("woo")
+    return predict

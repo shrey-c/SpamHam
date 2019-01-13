@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import re
 import pickle
+from sklearn.externals import joblib
 
 nltk.download('punkt')
 
@@ -201,34 +202,53 @@ def metrics(labels, predictions):
     print("F-score: ", Fscore)
     print("Accuracy: ", accuracy)
 
+def training():
+    sc_tf_idf = SpamClassifier(trainData, 'tf-idf')
+    sc_tf_idf.train()
+    preds_tf_idf = sc_tf_idf.predict(testData['message'])
+    metrics(testData['label'], preds_tf_idf)
+    sc_bow = SpamClassifier(trainData, 'bow')
+    sc_bow.train()
+    preds_bow = sc_bow.predict(testData['message'])
+    metrics(testData['label'], preds_bow)
+    filename = 'finalized_model2.sav'
+    pickle.dump(sc_tf_idf, open(filename, 'wb'))
+
 sc_tf_idf = SpamClassifier(trainData, 'tf-idf')
 sc_tf_idf.train()
 preds_tf_idf = sc_tf_idf.predict(testData['message'])
 metrics(testData['label'], preds_tf_idf)
-
 sc_bow = SpamClassifier(trainData, 'bow')
 sc_bow.train()
 preds_bow = sc_bow.predict(testData['message'])
 metrics(testData['label'], preds_bow)
-
-#pm = process_message('I cant pick the phone right now. Pls send a message')
-#print(sc_tf_idf.classify(pm))
-
-#pm = process_message('Congratu#lations ur awarded $500 ')
-#print(sc_tf_idf.classify(pm))
-#pm = process_message('I cant pick the phone right now. Pls send a message')
-#print(sc_tf_idf.classify(pm))
-#pm = process_message('I cant pick the phone right now. Pls send a message')
-#print(sc_tf_idf.classify(pm))
-#pm = process_message('I cant pick the phone right now. Pls send a message')
-#print(sc_tf_idf.classify(pm))
-#pm = process_message('I cant pick the phone right now. Pls send a message')
-#print(sc_tf_idf.classify(pm))
-#pm = process_message('I cant pick the phone right now. Pls send a message')
-#print(sc_tf_idf.classify(pm))
-
 filename = 'finalized_model2.sav'
-pickle.dump(sc_tf_idf, open(filename, 'wb'))
+joblib.dump(sc_tf_idf, open(filename, 'wb'))
+pm = process_message("car")
+print(sc_tf_idf.classify(pm))
+
+
+
+def classified(msg):
+    classifier1 = joblib.load(sc_tf_idf, 'finalized_model2.sav', compress=9)
+    pm = process_message(msg)
+    return classifier1.classify(pm)
+
+
+
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+#pm = process_message('I cant pick the phone right now. Pls send a message')
+#print(sc_tf_idf.classify(pm))
+
+
 
 # some time later...
 
