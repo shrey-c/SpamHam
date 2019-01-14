@@ -8,14 +8,20 @@ from SH.models import User,  Conversation, Email
 import hashlib #for SHA512
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy.orm import Session
-#from googlemaps import Client as GoogleMaps
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from math import log, sqrt
+import pandas as pd
+import numpy as np
+import re
+from sklearn.externals import joblib
 import requests
 from sqlalchemy import or_ , and_
-import pickle
-
-
-loaded_model = pickle.load(open('finalized_model.sav', 'rb'))
-print(loaded_model)
+from trained_model2 import classified, SpamClassifier
 
 
 @app.route("/")
@@ -65,12 +71,18 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             ##ML PART
-
-
-
-
-
-
+            emails= Email.query.filter_by(user_id=current_user.id).all()
+            classification
+            for email in emails:
+                a=classified(email.received)
+                if a ==True:
+                    email.spam = email.received
+                    db.session.commit()
+                else:
+                    email.ham = email.received
+                    db.session.commit()
+                email.received.pop()
+                print(a)
             return redirect(next_page) if next_page else redirect(url_for('account'))
 
         else:
@@ -80,7 +92,6 @@ def login():
     else:
         print('halaaa1')
     return render_template('login.html', title='Login', form=form)
-
 
 
 @app.route("/logout")
@@ -96,10 +107,6 @@ def account():
     email = Email.query.filter_by(user_id=current_user.id).all()
     for message in email:
         messages.append(message.ham)
-
-
-        ##
-
     return render_template('account.html', title='Account',messages= message)
 
 @app.route("/compose", methods= ['POST', 'GET'])
@@ -119,70 +126,8 @@ def compose():
 
 @app.route("/spam", methods= ['POST', 'GET'])
 @login_required
-def account():
-
+def spam():
+    email = Email.query.filter_by(user_id=current_user.id).all()
+    for message in email:
+        messages.append(message.ham)
         return render_template('spam.html', title='Account',sponsor_logo=sponsor_logo, form=form)
-
-@app.route("/sent", methods= ['POST', 'GET'])
-@login_required
-def account():
-
-        return render_template('sent.html', title='Account',sponsor_logo=sponsor_logo, form=form)
-
-@
-
-    #return associated_users_choices
-@app.route("/chatbox/<chatwith_id>", methods= ['POST', 'GET'])#Whom do you want to chat with?
-@login_required
-def chat(chatwith_id):
-    print(chatwith_id)
-    form=MailBoxText()
-    messages=[]
-    conversing= Conversing.query.filter(or_(Conversing.user1==chatwith_id,Conversing.user2==chatwith_id)).all()
-    for nowuser in conversing:
-        if current_user.type=='P':
-            if nowuser.user1== current_user.id:
-
-                user=SponsorUser.query.filter_by(user_id=nowuser.user2).first()
-                messages=[[user.sponsor_name]]
-                if form.validate_on_submit() :
-                    conversation= Conversation(text = form.text.data, conversing_id= nowuser.id, sender_id= current_user.id  )
-                    db.session.add(conversation)
-                    db.session.commit()
-                for conversation in Conversation.query.filter_by(conversing_id = nowuser.id).all():
-                    message=[conversation.text,conversation.time, conversation.sender_id]
-                    messages.append(message)
-
-            elif  nowuser.user2==current_user.id:
-                user=User.query.filter_by(user_id=nowuser.user2).first()
-                messages=[[user.sponsor_name]]
-                if form.validate_on_submit() :
-                    conversation= Conversation(text = form.text.data, conversing_id= nowuser.id, sender_id= current_user.id  )
-                    db.session.add(conversation)
-                    db.session.commit()
-                for conversation in Conversation.query.filter_by(conversing_id = nowuser.id).all():
-                    message=[conversation.text,conversation.time, conversation.sender_id]#just for now
-                    messages.append(message)
-
-    return render_template('chatbox.html', title= 'ChatBox', form=form, messages=messages, current_user=current_user, user=user)
-
-
-@app.route("/about")
-def about():
-    return render_template('about.html', title='About')
-
-
-@app.route("/MeetTheTeam")
-def team():
-    return render_template('MeetTheTeam.html')
-
-
-@app.route("/WhatWeDo")
-def work():
-    return render_template('WhatWeDo.html')
-
-
-@app.route('/email', methods = ['GET', 'POST'])
-@login_required
-def email():
-    return render_template('email.html', title='Email')
