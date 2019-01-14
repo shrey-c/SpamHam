@@ -92,30 +92,30 @@ def logout():
 @app.route("/account", methods= ['POST', 'GET'])
 @login_required
 def account():
+    messages=[]
+    email = Email.query.filter_by(user_id=current_user.id).all()
+    for message in email:
+        messages.append(message.ham)
+
+
         ##
 
-        return render_template('account.html', title='Account',sponsor_logo=sponsor_logo, form=form)
+    return render_template('account.html', title='Account',messages= message)
 
 @app.route("/compose", methods= ['POST', 'GET'])
 @login_required
 def compose():
-        form =MailBoxText(request.form)
-        if form.validate_on_submit() :
-            user_recepient = User.query.filter_by(email = form.recepient.data)
-            conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
-            db.session.add(conversation)
-            db.session.commit()
-            email = Email(user_id = user_recepient.id, received = conversation.text )
-            db.session.add(email)
-            db.session.commit()
+    form =MailBoxText(request.form)
+    if form.validate_on_submit() :
+        user_recepient = User.query.filter_by(email = form.recepient.data)
+        conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
+        db.session.add(conversation)
+        db.session.commit()
+        email = Email(user_id = user_recepient.id, received = conversation.text )
+        db.session.add(email)
+        db.session.commit()
+    return render_template('compose.html', title='Compose', form=form)
 
-        return render_template('compose.html', title='Account',sponsor_logo=sponsor_logo, form=form)
-
-@app.route("/received", methods= ['POST', 'GET'])
-@login_required
-def account():
-
-        return render_template('received.html', title='Account',sponsor_logo=sponsor_logo, form=form)
 
 @app.route("/spam", methods= ['POST', 'GET'])
 @login_required
@@ -129,91 +129,7 @@ def account():
 
         return render_template('sent.html', title='Account',sponsor_logo=sponsor_logo, form=form)
 
-@app.route("/user/<user2_id>", methods = ['GET', 'POST'])
-@login_required
-def user2_account(user2_id):
-
-    conversing=Conversing.query.filter(and_(Conversing.user1==current_user.id,Conversing.user2==user2_id)).first()
-    if conversing==None:
-
-        if current_user.type == 'P':
-
-            form=InviteForm()
-            sponsorUser=SponsorUser.query.filter_by(user_id=user2_id).first()
-            flag=1
-            if form.validate_on_submit():
-                conversing=Conversing(user1=current_user.id,user2=user2_id,status='Sent')
-                db.session.add(conversing)
-                db.session.commit()
-
-            return render_template('User2Account_sponsor.html', title='Account', sponsorUser=sponsorUser, current_user=current_user,form=form,flag=flag)
-
-        elif current_user.type == 'S':
-
-            form=InviteForm()
-            partyUser = PartyUser.query.filter_by(user_id=user2_id).first()
-            flag=1
-            if form.validate_on_submit():
-                conversing=Conversing(user1=current_user.id,user2=user2_id,status='Sent')
-                db.session.add(conversing)
-                db.session.commit()
-
-            return render_template('User2Account_party.html', title='Account', partyUser=partyUser, current_user=current_user,form=form,flag=flag)
-
-    else:
-        if current_user.type == 'P':
-            flag=0
-            sponsorUser=SponsorUser.query.filter_by(user_id=user2_id).first()
-            db.session.commit()
-            return render_template('User2Account_sponsor.html', title='Account', sponsorUser=sponsorUser, current_user=current_user,flag=flag)
-
-        elif current_user.type == 'S':
-            flag=0
-            partyUser = PartyUser.query.filter_by(user_id=user2_id).first()
-            db.session.commit()
-            return render_template('User2Account_party.html', title='Account', partyUser=partyUser, current_user=current_user,flag=flag)
-
-
-@app.route("/chatwith", methods= ['POST', 'GET'])#Whom do you want to chat with?
-@login_required
-def chatwith():
-    associated_users_list=[]
-    conversing= Conversing.query.filter(or_(Conversing.user1==current_user.id,Conversing.user2==current_user.id)).all()
-    conversing2= Conversing.query.filter(or_(Conversing.user1==current_user.id,Conversing.user2==current_user.id)).first()
-
-
-    if conversing2 == None:
-        print('10001')
-        return render_template ('chatError.html', title = 'Chat Error',current_user=current_user)
-    else:
-        for nowuser in conversing :
-            print('1000')
-            print(nowuser.status)
-            if nowuser.user1== current_user.id:
-                if nowuser.status=='In-touch':
-                    if current_user.type == 'P':
-                        sponsorUser= SponsorUser.query.filter_by(user_id=nowuser.user2).first()
-                        associated_user=[sponsorUser.user_id,sponsorUser.sponsor_name]
-                        associated_users_list.append(associated_user)
-                    elif current_user.type == 'S':
-                        partyUser= PartyUser.query.filter_by(user_id=nowuser.user2).first()
-                        associated_user=[partyUser.user_id,partyUser.party_name]
-                        associated_users_list.append(associated_user)
-            elif nowuser.user2== current_user.id:
-                if nowuser.status=='In-touch':
-                    if current_user.type == 'P':
-                        sponsorUser= SponsorUser.query.filter_by(user_id=nowuser.user1).first()
-                        associated_user=[sponsorUser.user_id,sponsorUser.sponsor_name]
-                        associated_users_list.append(associated_user)
-                    elif current_user.type == 'S':
-                        partyUser= PartyUser.query.filter_by(user_id=nowuser.user1).first()
-                        associated_user=[partyUser.user_id,partyUser.party_name]
-                        associated_users_list.append(associated_user)
-        if associated_users_list==[]:
-            return render_template ('chatError.html', title = 'No Users')
-        return render_template ('chatlist.html', title = 'Chat with', associated_users_list=associated_users_list)
-
-
+@
 
     #return associated_users_choices
 @app.route("/chatbox/<chatwith_id>", methods= ['POST', 'GET'])#Whom do you want to chat with?

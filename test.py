@@ -17,5 +17,5 @@ from sklearn.externals import joblib
 #print (2)
 #print (predict)
 from trained_model2 import classified, SpamClassifier
-a = classified('hi')
+a = classified("Free free free new sale buy 1 get 1 free")
 print(a)

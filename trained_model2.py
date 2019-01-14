@@ -212,25 +212,15 @@ def training():
     preds_bow = sc_bow.predict(testData['message'])
     metrics(testData['label'], preds_bow)
     filename = 'finalized_model2.sav'
-    pickle.dump(sc_tf_idf, open(filename, 'wb'))
+    joblib.dump(sc_tf_idf, 'filename', compress=9)
 
-sc_tf_idf = SpamClassifier(trainData, 'tf-idf')
-sc_tf_idf.train()
-preds_tf_idf = sc_tf_idf.predict(testData['message'])
-metrics(testData['label'], preds_tf_idf)
-sc_bow = SpamClassifier(trainData, 'bow')
-sc_bow.train()
-preds_bow = sc_bow.predict(testData['message'])
-metrics(testData['label'], preds_bow)
-filename = 'finalized_model2.sav'
-joblib.dump(sc_tf_idf, open(filename, 'wb'))
-pm = process_message("car")
-print(sc_tf_idf.classify(pm))
+
+
 
 
 
 def classified(msg):
-    classifier1 = joblib.load(sc_tf_idf, 'finalized_model2.sav', compress=9)
+    classifier1 = joblib.load('finalized_model2.sav')
     pm = process_message(msg)
     return classifier1.classify(pm)
 

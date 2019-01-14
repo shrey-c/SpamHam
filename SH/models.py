@@ -40,7 +40,7 @@ class Conversation(db.Model):
 
 class Email(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    #user = db.relationship("User", back_populates ="email")
+    user = db.relationship("User", back_populates ="email")
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable= True)
     received = db.Column(db.String(1500), nullable=True)
     spam = db.Column(db.String(1500), nullable=True)
