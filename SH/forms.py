@@ -2,9 +2,9 @@ from flask_wtf import FlaskForm
 from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Required, NumberRange, ValidationError
-from SH.models import User, Conversing, Conversation
+from SH.models import User, Email, Conversation
 
-class SelectForm(FlaskForm):
+class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(max=120) ,Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
@@ -23,6 +23,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-class ChatBoxText(FlaskForm):
+class MailBoxText(FlaskForm):
     text = StringField('Enter Text', validators=[DataRequired(), Length(min=1, max=500)])
     send = SubmitField('Send')

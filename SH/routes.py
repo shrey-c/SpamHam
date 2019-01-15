@@ -21,7 +21,7 @@ import re
 from sklearn.externals import joblib
 import requests
 from sqlalchemy import or_ , and_
-from trained_model2 import classified, SpamClassifier
+
 
 
 @app.route("/")
@@ -48,7 +48,7 @@ def register():
         db.session.commit()
         flash(f'Success! Please fill in the remaining details', 'success')
         return redirect(url_for('login'))
-    return render_template('selectForm.html', form=form)
+    return render_template('regForm.html', form=form)
 
 
 
@@ -57,7 +57,7 @@ def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-
+        from trained_model2 import classified, SpamClassifier
         #modified to use SHA512
 
         s = 0
@@ -107,7 +107,7 @@ def account():
     email = Email.query.filter_by(user_id=current_user.id).all()
     for message in email:
         messages.append(message.ham)
-    return render_template('account.html', title='Account',messages= message)
+    return render_template('startpage.html', title='Account',messages= message)
 
 @app.route("/compose", methods= ['POST', 'GET'])
 @login_required
