@@ -3,8 +3,8 @@ import secrets
 from SH import app, db, bcrypt
 from PIL import Image
 from flask import Flask, session, escape, render_template, url_for, flash, redirect, request
-from SH.forms import LoginForm, RegisterForm,MailBoxText
-from SH.models import User,  Conversation, Email
+from SH.forms import LoginForm, RegisterForm, MailBoxText
+from SH.models import User, Conversation, Emails
 import hashlib #for SHA512
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy.orm import Session
@@ -21,7 +21,7 @@ import re
 from sklearn.externals import joblib
 import requests
 from sqlalchemy import or_ , and_
-
+from SH.trained_model2 import classified, SpamClassifier
 
 
 @app.route("/")
@@ -34,8 +34,8 @@ def home():
 def register():
     form= RegisterForm(request.form)
     if form.validate_on_submit():
-        #if current_user.is_authenticated:
-        #    return redirect(url_for('home'))
+        if current_user.is_authenticated:
+            return redirect(url_for('home'))
         pw = (form.password.data)
         s = 0
         for char in pw:
@@ -43,12 +43,14 @@ def register():
             s = s+a #sum of ASCIIs acts as the salt
         hashed_password = (str)((hashlib.sha512((str(s).encode('utf-8'))+((form.password.data).encode('utf-8')))).hexdigest())
             #hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User( email= form.email.data , password= hashed_password, type= form.type.data )
+        user = User( email_id= form.email_id.data , password= hashed_password )
         db.session.add(user)
         db.session.commit()
         flash(f'Success! Please fill in the remaining details', 'success')
         return redirect(url_for('login'))
-    
+
+
+
     return render_template('regForm.html', form=form)
 
 
@@ -57,8 +59,8 @@ def register():
 def login():
     form = LoginForm(request.form)
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        from trained_model2 import classified, SpamClassifier
+        user = User.query.filter_by(email_id=form.email_id.data).first()
+
         #modified to use SHA512
 
         s = 0
@@ -72,8 +74,8 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             ##ML PART
-            emails= Email.query.filter_by(user_id=current_user.id).all()
-            classification
+            emails= Emails.query.filter_by(user_id=current_user.id).all()
+
             for email in emails:
                 a=classified(email.received)
                 if a ==True:
@@ -105,10 +107,11 @@ def logout():
 @login_required
 def account():
     messages=[]
-    email = Email.query.filter_by(user_id=current_user.id).all()
+    message = ''
+    email = Emails.query.filter_by(user_id=current_user.id).all()
     for message in email:
         messages.append(message.ham)
-    return render_template('startpage.html', title='Account',messages= message)
+    return render_template('home.html', title='Account',messages= message)
 
 @app.route("/compose", methods= ['POST', 'GET'])
 @login_required
@@ -119,7 +122,7 @@ def compose():
         conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
         db.session.add(conversation)
         db.session.commit()
-        email = Email(user_id = user_recepient.id, received = conversation.text )
+        email = Emails(user_id = user_recepient.id, received = conversation.text )
         db.session.add(email)
         db.session.commit()
     return render_template('compose.html', title='Compose', form=form)
@@ -128,7 +131,7 @@ def compose():
 @app.route("/spam", methods= ['POST', 'GET'])
 @login_required
 def spam():
-    email = Email.query.filter_by(user_id=current_user.id).all()
+    email = Emails.query.filter_by(user_id=current_user.id).all()
     for message in email:
         messages.append(message.ham)
         return render_template('spam.html', title='Account',sponsor_logo=sponsor_logo, form=form)

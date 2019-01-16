@@ -3,7 +3,7 @@
 <div class=container>
 
 	<blockquote>
-      Compose 
+      Compose
     </blockquote>
 
 	<div class="row">
@@ -11,25 +11,25 @@
         {{ form.hidden_tag() }}
             <fieldset class="form-group">
     	      <div class="form-group">
-                    {{ form.email.label(class="form-control-label") }}
-                    {% if form.email.errors %}
-                        {{ form.email(class="form-control form-control-lg is-invalid") }}
+                    {{ form.email_id.label(class="form-control-label") }}
+                    {% if form.email_id.errors %}
+                        {{ form.email_id(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
-                            {% for error in form.email.errors %}
+                            {% for error in form.email_id.errors %}
                                 <span>{{ error }}</span>
                             {% endfor %}
                         </div>
                     {% else %}
-                        {{ form.email(class="form-control form-control-lg") }}
+                        {{ form.email_id(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
                 </fieldset>
         </form>
-	          <span class="helper-text" data-error="wrong" data-success="right">Reciever's Email-ID</span>                      
+	          <span class="helper-text" data-error="wrong" data-success="right">Reciever's Email-ID</span>
 
 	        </div>
 
-	     
+
 	<div class="row">
 	    <form class="col s12">
 	      <div class="row">
@@ -50,4 +50,3 @@
 
 </div>
 {% endblock %}
-

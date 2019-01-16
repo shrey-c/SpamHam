@@ -1,6 +1,7 @@
 from SH import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -8,14 +9,14 @@ def load_user(user_id):
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    email= db.Column(db.String(120), unique=True)
+    email_id= db.Column(db.String(120))
     password= db.Column(db.String(150), nullable=False)
-    email = db.relationship("Email", back_populates ="user")
+    email = db.relationship("Emails", back_populates ="user")
     received = db.Column(db.String(1500), nullable=True)
     spam = db.Column(db.String(1500), nullable=True)
     ham = db.Column(db.String(1500), nullable=True)
     def __repr__(self):
-        return f"User('{self.email}','{self.received}','{self.spam}','{self.ham}')"
+        return f"User('{self.email_id}','{self.received}','{self.spam}','{self.ham}')"
 
 #class Conversing(db.Model):
     #id = db.Column(db.Integer, primary_key=True)
@@ -38,7 +39,7 @@ class Conversation(db.Model):
         return f"Conversation('{self.text}','{self.time}','{self.conversing_id}', '{self.sender_id}')"
 
 
-class Email(db.Model):
+class Emails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user = db.relationship("User", back_populates ="email")
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable= True)
@@ -46,4 +47,4 @@ class Email(db.Model):
     spam = db.Column(db.String(1500), nullable=True)
     ham = db.Column(db.String(1500), nullable=True)
     def __repr__(self):
-        return f"Conversation('{self.received}','{self.spam}','{self.ham}')"
+        return f"Email('{self.user_id}','{self.received}','{self.spam}','{self.ham}')"

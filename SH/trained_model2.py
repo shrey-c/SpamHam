@@ -13,7 +13,7 @@ from sklearn.externals import joblib
 
 nltk.download('punkt')
 
-mails = pd.read_csv('spam.csv', encoding = 'latin-1')
+mails = pd.read_csv('SH/spam.csv', encoding = 'latin-1')
 mails.head()
 
 mails.drop(['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4'], axis = 1, inplace = True)
