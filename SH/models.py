@@ -11,9 +11,9 @@ class User(db.Model, UserMixin):
     email= db.Column(db.String(120), unique=True)
     password= db.Column(db.String(150), nullable=False)
     email = db.relationship("Email", back_populates ="user")
-    received = db.Column(db.String(1500), nullable=False)
-    spam = db.Column(db.String(1500), nullable=False)
-    ham = db.Column(db.String(1500), nullable=False)
+    received = db.Column(db.String(1500), nullable=True)
+    spam = db.Column(db.String(1500), nullable=True)
+    ham = db.Column(db.String(1500), nullable=True)
     def __repr__(self):
         return f"User('{self.email}','{self.received}','{self.spam}','{self.ham}')"
 

@@ -46,19 +46,6 @@
                     {% endif %}
                 </div>
 
-				<div>
-					>Select Account User Type
-						{% if form.type.errors %}
-	                        {{ form.type(class="form-control form-control-lg is-invalid") }}
-	                        <div class="invalid-feedback">
-	                            {% for error in form.type.errors %}
-	                                <span>{{ error }}</span>
-	                            {% endfor %}
-	                        </div>
-	                    {% else %}
-	                        {{ form.type(class="form-control form-control-lg") }}
-	                    {% endif %}
-				</div>
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}

@@ -27,7 +27,7 @@ from sqlalchemy import or_ , and_
 @app.route("/")
 @app.route("/home")
 def home():
-    return render_template('home.html')
+    return render_template('startpage.html')
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -48,6 +48,7 @@ def register():
         db.session.commit()
         flash(f'Success! Please fill in the remaining details', 'success')
         return redirect(url_for('login'))
+    
     return render_template('regForm.html', form=form)
 
 
