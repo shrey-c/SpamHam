@@ -11,6 +11,7 @@ import re
 import pickle
 from sklearn.externals import joblib
 
+
 nltk.download('punkt')
 
 mails = pd.read_csv('SH/spam.csv', encoding = 'latin-1')

@@ -24,6 +24,7 @@ from sqlalchemy import or_ , and_
 from SH.trained_model2 import classified, SpamClassifier
 
 
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -102,7 +103,6 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-
 @app.route("/account", methods= ['POST', 'GET'])
 @login_required
 def account():
@@ -117,8 +117,9 @@ def account():
 @login_required
 def compose():
     form =MailBoxText(request.form)
+
     if form.validate_on_submit() :
-        user_recepient = User.query.filter_by(email = form.recepient.data)
+        user_recepient = User.query.filter_by(email_id = form.email_id.data).first()
         conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
         db.session.add(conversation)
         db.session.commit()
