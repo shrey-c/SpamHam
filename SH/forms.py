@@ -24,5 +24,6 @@ class LoginForm(FlaskForm):
 
 
 class MailBoxText(FlaskForm):
+    email_id = StringField('Email', validators=[DataRequired(), Length(max=120) ,Email()])
     text = StringField('Enter Text', validators=[DataRequired(), Length(min=1, max=500)])
     send = SubmitField('Send')

@@ -125,6 +125,7 @@ def compose():
         email = Emails(user_id = user_recepient.id, received = conversation.text )
         db.session.add(email)
         db.session.commit()
+        return redirect(url_for('account'))
     return render_template('compose.html', title='Compose', form=form)
 
 
