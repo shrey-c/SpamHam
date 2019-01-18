@@ -89,6 +89,7 @@ def login():
                         email.ham = email.received
                         db.session.commit()
                     print(a)
+            print(emails)
             return redirect(url_for('account'))
 
         else:
@@ -111,9 +112,12 @@ def account():
     messages=[]
     message = ''
     email = Emails.query.filter_by(user_id=current_user.id).all()
+    print(email)
     for message in email:
         messages.append(message.ham)
-    return render_template('home.html', title='Account',messages= message)
+        print(message)
+    print(messages)
+    return render_template('home.html', title='Account',messages= messages)
 
 @app.route("/compose", methods= ['POST', 'GET'])
 @login_required
@@ -125,9 +129,12 @@ def compose():
         conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
         db.session.add(conversation)
         db.session.commit()
+        print('apiu')
         email = Emails(user_id = user_recepient.id, received = conversation.text )
+        print('vidho')
         db.session.add(email)
         db.session.commit()
+        print(email)
         return redirect(url_for('account'))
     return render_template('compose.html', title='Compose', form=form)
 
