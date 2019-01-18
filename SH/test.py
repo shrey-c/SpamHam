@@ -16,6 +16,6 @@ from sklearn.externals import joblib
 #predict = classifier.predict(msg_test)
 #print (2)
 #print (predict)
-from trained_model2 import classified, SpamClassifier
+from trained_model2 import classified
 a = classified("my name ios apple")
 print(a)

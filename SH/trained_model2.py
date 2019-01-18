@@ -16,21 +16,21 @@ nltk.download('punkt')
 
 mails = pd.read_csv('SH/spam.csv', encoding = 'latin-1')
 mails.head()
-
+print(1)
 mails.drop(['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4'], axis = 1, inplace = True)
 mails.head()
-
+print(2)
 mails.rename(columns = {'v1': 'labels', 'v2': 'message'}, inplace = True)
 mails.head()
-
+print(3)
 mails['labels'].value_counts()
-
+print(4)
 mails['label'] = mails['labels'].map({'ham': 0, 'spam': 1})
 mails.head()
-
+print(5)
 mails.drop(['labels'], axis = 1, inplace = True)
 mails.head()
-
+print(6)
 totalMails = 4825 + 747
 trainIndex, testIndex = list(), list()
 for i in range(mails.shape[0]):
@@ -213,7 +213,7 @@ def training():
     preds_bow = sc_bow.predict(testData['message'])
     metrics(testData['label'], preds_bow)
     filename = 'finalized_model2.sav'
-    joblib.dump(sc_tf_idf, 'filename', compress=9)
+    joblib.dump(sc_tf_idf, filename)
 
 
 
@@ -221,7 +221,7 @@ def training():
 
 
 def classified(msg):
-    classifier1 = joblib.load('finalized_model2.sav')
+    classifier1 = joblib.load('SH/finalized_model2.sav')
     pm = process_message(msg)
     return classifier1.classify(pm)
 

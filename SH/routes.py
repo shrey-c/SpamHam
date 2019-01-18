@@ -22,7 +22,7 @@ from sklearn.externals import joblib
 import requests
 from sqlalchemy import or_ , and_
 from SH.trained_model2 import classified, SpamClassifier
-
+import SH.trained_model2
 
 
 @app.route("/")
@@ -78,16 +78,18 @@ def login():
             emails= Emails.query.filter_by(user_id=current_user.id).all()
 
             for email in emails:
-                a=classified(email.received)
-                if a ==True:
-                    email.spam = email.received
-                    db.session.commit()
+                if email.spam or email.ham:
+                    continue
                 else:
-                    email.ham = email.received
-                    db.session.commit()
-                email.received.pop()
-                print(a)
-            return redirect(next_page) if next_page else redirect(url_for('account'))
+                    a=classified(email.received)
+                    if a ==True:
+                        email.spam = email.received
+                        db.session.commit()
+                    else:
+                        email.ham = email.received
+                        db.session.commit()
+                    print(a)
+            return redirect(url_for('account'))
 
         else:
             print('halaaa2')
