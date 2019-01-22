@@ -22,8 +22,12 @@
                     {% else %}
                         {{ form.email_id(class="form-control form-control-lg") }}
                     {% endif %}
+                     <span class="helper-text" data-error="wrong" data-success="right">Reciever's Email-ID</span>
 
-
+              </div>
+        	</fieldset>
+            <fieldset class="form-group">
+    	      <div class="form-group">
 				{% if form.text.errors %}
 					{{ form.text(class="form-control form-control-lg is-invalid") }}
 					<div class="invalid-feedback">
@@ -34,14 +38,14 @@
 				{% else %}
 					{{ form.text(class="form-control form-control-lg") }}
 				{% endif %}
+				<span class="helper-text" data-error="wrong" data-success="right">Enter your text here</span>
 		  	</div>
         	</fieldset>
 			<div>
 				{{ form.send(class="btn btn-outline-info") }}
 			</div>
         </form>
-	          <span class="helper-text" data-error="wrong" data-success="right">Reciever's Email-ID</span>
-
+	         
 	        </div>
 
 	</div>
