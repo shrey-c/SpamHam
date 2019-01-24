@@ -23,14 +23,14 @@
                 <div class="col s12 m8 l12">
                   {% for message in messages %}
                   <div class="card-panel white">
-                    <span class="card-title">Sender's Email Id</span>
-                    
-                      <p><h5>{{message}}</h5></p>
-                    
+                    <span class="card-title">{{message[0]}}</span>
+
+                      <p><h5>{{message[1]}}</h5></p>
+
                   </div>
-                  {% endfor %} 
+                  {% endfor %}
                 </div>
               </div>
           </div>
-       
+
 {% endblock content %}

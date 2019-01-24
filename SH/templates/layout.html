@@ -18,7 +18,7 @@
             <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
               {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('account') }}">Hi, {currentuser} </a></li>
+                <li><a href="{{ url_for('account') }}">Hi,  {{current_user.email_id}} </a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
               {% else %}
                 <li><a href="{{ url_for('login') }}">Login</a></li>

@@ -114,10 +114,13 @@ def account():
     email = Emails.query.filter_by(user_id=current_user.id).all()
     print(email)
     for message in email:
-        messages.append(message.ham)
-        print(message)
-    print(messages)
-    return render_template('home.html', title='Account',messages= messages)
+        if message.ham != None :
+            conversation = Conversation.query.filter_by(text=message.ham).first()
+            user = User.query.filter_by(id=conversation.sender_id).first()
+            messages.append([user.email_id,message.ham,conversation.time])
+            print(message)
+    print(messages[1][1])
+    return render_template('home.html', title='Account',messages= messages,current_user=current_user)
 
 @app.route("/compose", methods= ['POST', 'GET'])
 @login_required
@@ -136,13 +139,21 @@ def compose():
         db.session.commit()
         print(email)
         return redirect(url_for('account'))
-    return render_template('compose.html', title='Compose', form=form)
+    return render_template('compose.html', title='Compose', form=form,current_user=current_user)
 
 
 @app.route("/spam", methods= ['POST', 'GET'])
 @login_required
 def spam():
+    messages=[]
+    message = ''
     email = Emails.query.filter_by(user_id=current_user.id).all()
+    print(email)
     for message in email:
-        messages.append(message.ham)
-        return render_template('spam.html', title='Account',sponsor_logo=sponsor_logo, form=form)
+        if message.spam != None :
+            conversation = Conversation.query.filter_by(text=message.spam).first()
+            user = User.query.filter_by(id=conversation.sender_id).first()
+            messages.append([user.email_id,message.spam,conversation.time])
+            print(message)
+
+    return render_template('spam.html', title='Spam',messages=messages,current_user=current_user)
