@@ -27,3 +27,8 @@ class MailBoxText(FlaskForm):
     email_id = StringField('Email', validators=[DataRequired(), Length(max=120) ,Email()])
     text = StringField('Enter Text', validators=[DataRequired(), Length(min=1, max=500)])
     send = SubmitField('Send')
+
+    def validate_email(self, email_id):
+        user = User.query.filter_by(email_id=email_id.data).first()
+        if user == None:
+            raise ValidationError('No such email')

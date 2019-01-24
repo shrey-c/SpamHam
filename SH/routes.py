@@ -49,9 +49,6 @@ def register():
         db.session.commit()
         flash(f'Success! Please fill in the remaining details', 'success')
         return redirect(url_for('login'))
-
-
-
     return render_template('regForm.html', form=form)
 
 
@@ -91,7 +88,6 @@ def login():
                     print(a)
             print(emails)
             return redirect(url_for('account'))
-
         else:
             print('halaaa2')
             flash('Login Unsuccessful. Please check email and password', 'danger')
@@ -119,28 +115,7 @@ def account():
             user = User.query.filter_by(id=conversation.sender_id).first()
             messages.append([user.email_id,message.ham,conversation.time])
             print(message)
-    print(messages[1][1])
     return render_template('home.html', title='Account',messages= messages,current_user=current_user)
-
-@app.route("/compose", methods= ['POST', 'GET'])
-@login_required
-def compose():
-    form =MailBoxText(request.form)
-
-    if form.validate_on_submit() :
-        user_recepient = User.query.filter_by(email_id = form.email_id.data).first()
-        conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
-        db.session.add(conversation)
-        db.session.commit()
-        print('apiu')
-        email = Emails(user_id = user_recepient.id, received = conversation.text )
-        print('vidho')
-        db.session.add(email)
-        db.session.commit()
-        print(email)
-        return redirect(url_for('account'))
-    return render_template('compose.html', title='Compose', form=form,current_user=current_user)
-
 
 @app.route("/spam", methods= ['POST', 'GET'])
 @login_required
@@ -148,12 +123,42 @@ def spam():
     messages=[]
     message = ''
     email = Emails.query.filter_by(user_id=current_user.id).all()
+    email_temp = email
     print(email)
     for message in email:
+        message_temp = message
         if message.spam != None :
             conversation = Conversation.query.filter_by(text=message.spam).first()
             user = User.query.filter_by(id=conversation.sender_id).first()
             messages.append([user.email_id,message.spam,conversation.time])
             print(message)
-
     return render_template('spam.html', title='Spam',messages=messages,current_user=current_user)
+
+
+@app.route("/compose", methods= ['POST', 'GET'])
+@login_required
+def compose():
+    form =MailBoxText(request.form)
+    if form.validate_on_submit():
+        user_recepient = User.query.filter_by(email_id = form.email_id.data).first()
+        if user_recepient == None:
+            flash('Receivers email doesnt exist', 'danger')
+            return redirect(url_for('account'))
+        conversation= Conversation(text = form.text.data, sender_id= current_user.id, receiver_id= user_recepient.id  )
+        db.session.add(conversation)
+        db.session.commit()
+        print('apiu')
+        if conversation.sender_id==conversation.receiver_id:
+            email = Emails(user_id = user_recepient.id, received = conversation.text, ham = conversation.text )
+        else:
+            email = Emails(user_id = user_recepient.id, received = conversation.text)
+        print('vidho')
+        db.session.add(email)
+        db.session.commit()
+        print(email)
+        return redirect(url_for('account'))
+    else:
+        print('halaaa2')
+        flash('Login Unsuccessful. Please check email and password', 'danger')
+        print('halaaa2')
+    return render_template('compose.html', title='Compose', form=form,current_user=current_user)
