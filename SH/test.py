@@ -19,3 +19,4 @@ from sklearn.externals import joblib
 from trained_model2 import classified
 a = classified("my name ios apple")
 print(a)
+print("hi this is me")
