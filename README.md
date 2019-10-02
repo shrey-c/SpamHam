@@ -9,21 +9,21 @@ _italics_
 
 
 
-*item1  
-*item2  
+* item1  
+* item2  
   
 
-'some code'  
+'some code'    
 
-'''
-multicode
-'''
+'''  
+multicode  
+'''  
   
 #Header1  
 ##header2  
 ###header3  
 
-'''python
-print('hello')
+'''python  
+print('hello')  
 '''  
 
